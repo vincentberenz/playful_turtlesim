@@ -1,0 +1,6 @@
+
+chase | commit=0 :
+
+	swim_forward, while distance>0.5, priority of 2 | commit_duration=commit
+	turn, priority of 2 | commit_duration=commit
+	stop, priority of 1
