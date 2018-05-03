@@ -1,5 +1,5 @@
-from playful_tutorial.tutorial_turtlesim.py.world import ROS_world
-from playful_tutorial.tutorial_turtlesim.py.robot import Robot
+from playful_turtlesim.py.world import ROS_world
+from playful_turtlesim.py.robot import Robot
 
 
 # set to false to turn off playful terminal display

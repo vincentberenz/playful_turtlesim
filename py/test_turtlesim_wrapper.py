@@ -1,4 +1,4 @@
-from turtlesim_wrapper import Turtlesim,kill_turtle
+from turtlesim_wrapper import Turtlesim,kill_turtle,clear
 import rospy,math,time
 
 
@@ -52,3 +52,4 @@ if __name__ == "__main__":
     turtle1.clear()
     turtle2.clear()
 
+    clear()

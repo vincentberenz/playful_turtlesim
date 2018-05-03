@@ -13,7 +13,7 @@ try:
     import rospy
     from geometry_msgs.msg import Twist
 except:
-    raise Exception("ROS needs to be installed and sourced. Please visit http://www.ros.org/")
+    raise Exception("\n\nROS needs to be installed and sourced. Please visit http://www.ros.org/\n\n")
     
 try :
     from turtlesim.srv import Spawn
@@ -21,8 +21,9 @@ try :
     from turtlesim.srv import Kill
     from turtlesim.srv import SetPen
     from turtlesim.msg import Pose
+    from std_srvs.srv import Empty
 except :
-    raise Exception("turtlesim.py requires turtlesim to be installed. Please visit http://wiki.ros.org/turtlesim")
+    raise Exception("\n\nturtlesim.py requires turtlesim to be installed and running. Please visit http://wiki.ros.org/turtlesim\n\n")
 
 
 
@@ -33,6 +34,7 @@ _KILL_SERVICE = "kill"
 _PERMANENT_TURTLE_NAME = "turtle1"
 _POSE_TOPIC = "pose"
 _SET_PEN_SERVICE = "set_pen"
+_CLEAR_SERVICE = "clear"
 
 
 def kill_turtle(turtle_name):
@@ -47,6 +49,15 @@ def kill_turtle(turtle_name):
     rospy.wait_for_service(_KILL_SERVICE)
     service = rospy.ServiceProxy(_KILL_SERVICE, Kill)
     service(turtle_name)
+
+
+def clear():
+
+    global _CLEAR_SERVICE
+    
+    rospy.wait_for_service(_CLEAR_SERVICE)
+    service = rospy.ServiceProxy(_CLEAR_SERVICE, Empty)
+    service()
 
 
     

@@ -1,6 +1,6 @@
 import playful,time
 
-from playful_tutorial.tutorial_turtlesim.py.turtlesim_wrapper import Turtlesim
+from playful_turtlesim.py.turtlesim_wrapper import Turtlesim
 
 
 class set_target(playful.Node):

@@ -1,4 +1,4 @@
-from turtlesim_wrapper import Turtlesim,kill_turtle
+from turtlesim_wrapper import Turtlesim,kill_turtle,clear
 import math,time,random,threading,rospy
 
 # simulation of a "world" in which some turtles go around
@@ -205,4 +205,4 @@ class ROS_world:
         for turtle in self._turtles.values():
             turtle.clear()
             
-
+        clear()
