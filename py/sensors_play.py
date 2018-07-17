@@ -1,6 +1,5 @@
 import playful,time
 
-
 # we assume perfect detection of the world by
 # the robot. For each turtle in the world,
 # a target scheme is pushed
@@ -18,7 +17,6 @@ class radar(playful.Node):
         while not self.should_pause():
 
             index_position = world.scan()
-
             if index_position:
 
                 for index,position in index_position.iteritems():

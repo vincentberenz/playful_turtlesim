@@ -153,5 +153,25 @@ class set_pen_color(playful.Node):
 
             self.spin(10)
 
+
+            
+class set_pen_red(set_pen_color):                    
                     
+    def __init__(self,width=5):
+
+        set_pen_color.__init__(self,color=[255,0,0],width=width)
+
+
+        
+class set_pen_blue(set_pen_color):                    
                     
+    def __init__(self,width=5):
+
+        set_pen_color.__init__(self,color=[0,0,255],width=width)
+
+
+class set_pen_green(set_pen_color):                    
+                    
+    def __init__(self,width=5):
+
+        set_pen_color.__init__(self,color=[0,255,0],width=width)

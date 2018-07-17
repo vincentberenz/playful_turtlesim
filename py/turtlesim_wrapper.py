@@ -95,7 +95,9 @@ class Turtlesim:
                 self._velocity = [msg.linear_velocity,msg.angular_velocity]
         self._subscriber = rospy.Subscriber(self.name+"/"+_POSE_TOPIC,Pose,pose_callback)
 
+        self.pen_color = None
 
+        
     def _spawn(self,x,y,theta):
 
         global _SPAWN_SERVICE
@@ -114,6 +116,8 @@ class Turtlesim:
         rospy.wait_for_service(self.name+"/"+_SET_PEN_SERVICE)
         service = rospy.ServiceProxy(self.name+"/"+_SET_PEN_SERVICE, SetPen)
         response = service(r, g, b, width, 0)
+
+        self.pen_color = [r,g,b]
 
         
     def set_pen_off(self):
