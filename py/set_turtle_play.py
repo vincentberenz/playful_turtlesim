@@ -27,12 +27,16 @@ class Turtle(object):
         self.position = position
 
 
+        
 # set a Turtle in playful memory and in
 # turtlesim simulator
 class set_turtle(playful.Node):
 
     
-    def __init__(self):
+    def __init__(self,
+                 min_x=1,max_=1,
+                 min_y=1,max_y=9,
+                 min_speed=0.4,max_speed=0.6):
 
         self._min = [min_x,min_y]
         self._max = [max_x,max_y]
@@ -40,6 +44,9 @@ class set_turtle(playful.Node):
         self._position,_ = self._get_next_position()
         self._last_time_update = time.time()
         self._set_next_move()
+        self._spawn( self._position[0],
+                     self._position[1],
+                     0 )
 
         
     def __execute__(self):
