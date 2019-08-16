@@ -3,28 +3,31 @@ program:
 
 	# chasing any turtle coming too close to home
 	# picking the turtle the closest to home if more than 1
-	targeting rfTurtle: chasing, while close_to_home, priority of inv_distance_to_home | threshold=6.0 ; score_range=[2,3]
+	#targeting rfTurtle: chasing, while close_to_home, priority of inv_distance_to_home | threshold=6.0 ; score_range=[2,3]
 
 	# default behavior: going back home
-	go_home, while far_from_robot | threshold = 1
+	go_home
 
 	# setting turtles. Add lines for more turtles
 	set_turtle
-	set_turtle
+	#set_turtle
+
+	# setting position where controled turtle like to be safe
+	set_home | x=0 ; y=0
 
 	# transforming 
-	targeting Turtle: in_robot_frame
-	
+	targeting Turtle: in_robot_frame | out="rfTurtle"
+	targeting Home: in_robot_frame | out="rfHome"
 
 	# chasing means going toward with a red trail
 	chasing:
 		swim_toward
-		set_pen | r=1 ; g=0 ; b=0
+		set_color | r=1 ; g=0 ; b=0
 
 	# go home means going toward home with a green trail, then
 	# turning toward other turtles
 	go_home:
-		targeting Home: swim_toward, priority of 2 | thresold=1
-		targeting Turtle: swim_toward, priority of inv_distance_to_home | k_linear=0 ; score_range=[1,2] 
-		set_pen | r=0 ; g=1 ; b=0
+		targeting rfHome: swim_toward, while far_from_robot, priority of 2 | thresold=1
+		targeting rfTurtle: swim_toward, priority of inv_distance_to_home | k_linear=0 ; score_range=[1,2] 
+		set_color | r=0 ; g=1 ; b=0
 

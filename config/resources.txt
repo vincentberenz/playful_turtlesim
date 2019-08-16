@@ -1,8 +1,0 @@
-# for going forward
-legs
-
-# to turn
-tail
-
-# to set color of the trail
-brush

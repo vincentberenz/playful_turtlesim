@@ -1,4 +1,0 @@
-program:
-
-	targeting target: chase, priority of 2
-	set_target, priority of 1 | position=[8,8]
