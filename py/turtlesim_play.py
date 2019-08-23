@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 
 _VELOCITY_TOPIC = "/turtle1/cmd_vel"
 _POSE_TOPIC = "/turtle1/pose"
-_SET_PEN_SERVICE = "/turtle1/set_pen"
+_SET_PEN_SERVICE = "set_pen"
 _TELEPORT_SERVICE = "teleport_absolute"
 _SPAWN_SERVICE = "spawn"
 _KILL_SERVICE = "kill"
@@ -23,18 +23,11 @@ from std_srvs.srv import Empty
 # absolute frame
 class Turtle(object):
     
-    __slots__=["position"]
+    __slots__=["position","id_"]
     
-    def __init__(self,position):
+    def __init__(self,position,id_):
         self.position = position
-
-
-# a turtle with position expressed in
-# the frame relative to the controlled turtle
-class rfTurtle:
-
-    def __init__(self,position):
-        self.position = position
+        self.id_ = id_
 
 
 # the home of the controlled robot
@@ -44,15 +37,7 @@ class Home:
         self.position = position
 
         
-# the home of the controlled robot
-# in frame relative to controlled turtle
-class rfHome:
-
-    def __init__(self,position):
-        self.position = position
-
         
-
 
 # help function to get controlled turtle position
 class _Robot_position:
@@ -80,44 +65,25 @@ class _Robot_position:
         
 
         
-       
-# transform the position of the target from absolute frame to
-# position relative to the robot, and set to memory
-# a corresponding instance of rfTurtle (robot frame turtle)
-class in_robot_frame(playful.Node):
+# help function that transform from absolute frame
+# to frame of the robot
+def _in_robot_frame(absolute_position):
 
-    def __init__(self,out=None):
-        self.out = out
+    robot_position = _Robot_position.get()
+    if robot_position is None:
+        return None
+
+    theta = robot_position[2]
+    v = [a-r for a,r in zip(absolute_position,robot_position)]
+    gamma = math.atan2(v[1],v[0])
+    beta = gamma-theta
+    d = math.sqrt(sum([(a-r)**2 for a,r in zip(absolute_position[:2],robot_position[:2])]))
+    position = [d*math.cos(beta),d*math.sin(beta),beta]
     
-    def execute(self):
+    return position
 
-        def _get_relative_position(absolute_position,
-                                  robot_position):
-            theta = robot_position[2]
-            v = [a-r for a,r in zip(absolute_position,robot_position)]
-            gamma = math.atan2(v[1],v[0])
-            beta = gamma-theta
-            d = math.sqrt(sum([(a-r)**2 for a,r in zip(absolute_position[:2],robot_position[:2])]))
-            position = [d*math.cos(beta),d*math.sin(beta),beta]
-            return position
-
-        
-        while not self.should_pause():
-
-            target = self.get_target()
-            robot_position = _Robot_position.get()
-            
-            if target and robot_position:
-
-                absolute_position = target.position
-                position = _get_relative_position(absolute_position,
-                                                  robot_position)
-                
-                playful.Memory.set(globals()[self.out](position),id(self))
-                
-            
-            self.spin(20)
-
+    
+       
                 
 # swim toward the targeted object.
 # assumes the position of the targeted object in
@@ -125,7 +91,7 @@ class in_robot_frame(playful.Node):
 class swim_toward(playful.Node):
 
     
-    def __init__(self,k_linear=0.2,k_angular=0.4):
+    def __init__(self,k_linear=0.2,k_angular=0.6):
         
         self.k_linear = k_linear
         self.k_angular = k_angular
@@ -187,8 +153,8 @@ class set_color(playful.Node):
         def _set_pen(r,g,b,width):
 
             global _SET_PEN_SERVICE
-            rospy.wait_for_service(self.name+"/"+_SET_PEN_SERVICE)
-            service = rospy.ServiceProxy(self.name+"/"+_SET_PEN_SERVICE, SetPen)
+            rospy.wait_for_service("/turtle1/"+_SET_PEN_SERVICE)
+            service = rospy.ServiceProxy("/turtle1/"+_SET_PEN_SERVICE, SetPen)
             response = service(r, g, b, width, 0)
 
         while not self.should_pause():
@@ -206,7 +172,8 @@ class set_color(playful.Node):
                 
             self.spin(20)
 
-                
+
+            
 # set the position of the controlled turtle's home
 class set_home(playful.Node):
 
@@ -218,8 +185,9 @@ class set_home(playful.Node):
 
         while not self.should_pause():
 
-            playful.Memory.set(Home([self.x,self.y]))
-            self.spin(5)
+            relative_position = _in_robot_frame([self.x,self.y])
+            playful.Memory.set(Home(relative_position))
+            self.spin(20)
 
 
 
@@ -231,11 +199,12 @@ def distance_to_home(target=None):
         return float("+inf")
 
     home = playful.Memory.get("Home")
-    if not home:
+
+    if not home or not home.position :
         return float("+inf")
 
     d = math.sqrt(sum([(p-h)**2 for p,h
-                       in zip(target.position,home.position)]))
+                       in zip(target.position,home.position[:2])]))
 
     return d
 
@@ -247,7 +216,7 @@ def inv_distance_to_home(target=None,score_range=[0,1]):
     if d==float("+inf"):
         return score_range[1]
     range_diff = score_range[1]-score_range[0]
-    r = score_range[0] + range_diff * ( (d+1) / (d+2))
+    r = score_range[0] + 1.0 / range_diff * ( (d+1) / (d+2))
     return r
 
 
@@ -264,16 +233,11 @@ def close_to_home(target=None,threshold=5.0):
 def far_from_robot(target=None,
                    threshold=1):
 
-    if not target:
+    if not target or not target.position:
         return False
-    
-    robot_position = _Robot_position.get()    
 
-    if robot_position is not None:
-        d = math.sqrt(sum([(p-r)**2 for p,r
-                       in zip(target.position,robot_position)]))
-
-        return d>threshold
+    d = math.sqrt( sum ( [t**2 for t in target.position[:2]] ) )
+    return d>threshold
 
     return False
 
@@ -306,6 +270,7 @@ class set_turtle(playful.Node):
 
         global _TELEPORT_SERVICE
 
+        
         first_time = True
         
         while not self.should_pause():
@@ -315,6 +280,8 @@ class set_turtle(playful.Node):
                 self._name = self._spawn(self._position[0],
                                          self._position[1],
                                          0)
+                # no need to print a trail
+                self.set_pen_off()
                 first_time = False
                 
             # updating turtle position
@@ -322,20 +289,35 @@ class set_turtle(playful.Node):
             self._iterate()
 
             # setting it in ROS
-            rospy.wait_for_service(self._name+"/"+_TELEPORT_SERVICE)
-            service = rospy.ServiceProxy(self._name+"/"+_TELEPORT_SERVICE, TeleportAbsolute)
+            service = self._name+"/"+_TELEPORT_SERVICE
+            rospy.wait_for_service(service)
+            service = rospy.ServiceProxy(service, TeleportAbsolute)
+
             service(self._position[0],
                     self._position[1],
                     0)
 
-            # setting it in playful
-            turtle = Turtle(self._position)
+            # setting it in playful, but in robot's frame
+            relative_position = _in_robot_frame(self._position)
+            turtle = Turtle(relative_position,self._name)
             playful.Memory.set(turtle,self._name)
 
+            self.spin(20)
+
         # deleting the turtle on exit
-        self.kill_turtle(self._name)
+        self.kill_turtle()
             
 
+    # set the turtle not to print any trail when moving
+    def set_pen_off(self):
+
+        global _SET_PEN_SERVICE
+        service = self._name+"/"+_SET_PEN_SERVICE
+        rospy.wait_for_service(service)
+        service = rospy.ServiceProxy(service, SetPen)
+        response = service(0, 0, 0, 0, 1)
+                                                
+        
     # generate randomly next position the turtle should go to
     def _get_next_position(self):
 
@@ -348,6 +330,7 @@ class set_turtle(playful.Node):
         return [x,y],speed
 
     
+    # distance between p1 and p2
     def _distance(self,p1,p2):
         return math.sqrt(sum([(a-b)**2 for a,b in zip(p1,p2)]))
     
@@ -392,9 +375,9 @@ class set_turtle(playful.Node):
         
     # generate the new turtle in ROS
     def _spawn(self,x,y,theta):
-
-        global _SPAWN_SERVICE
         
+        global _SPAWN_SERVICE
+
         rospy.wait_for_service(_SPAWN_SERVICE)
         service = rospy.ServiceProxy(_SPAWN_SERVICE, Spawn)
         response = service(x, y, theta, None)
@@ -403,20 +386,11 @@ class set_turtle(playful.Node):
 
     
     # delete the turtle in ROS
-    @staticmethod
-    def kill_turtle(turtle_name):
-
-        try:
-            rospy.init_node('kill_turtle_'+turtle_name, anonymous=True)
-        except :
-            pass
+    def kill_turtle(self):
 
         global _KILL_SERVICE
 
         rospy.wait_for_service(_KILL_SERVICE)
         service = rospy.ServiceProxy(_KILL_SERVICE, Kill)
-        service(turtle_name)
+        service(self._name)
 
-        
-    def __del__(self):
-        self.kill_turtle(self._name)
