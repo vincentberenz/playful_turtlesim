@@ -45,7 +45,7 @@ playful
 
 (press 'q' to exit)
 
-You should see your turtle chasing any other turtles going close to its home (a virtual point a the bottom of the simulared area).
+You should see your turtle chasing any other turtles going close to its home (a virtual point a the bottom of the simulated area).
 
 ## Check the code
 
