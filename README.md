@@ -40,7 +40,7 @@ git clone https://github.com/vincentberenz/playful_turtlesim.git
 
 ```bash
 cd playful_turtlesim
-playful
+playful execute
 ```
 
 (press 'q' to exit)
