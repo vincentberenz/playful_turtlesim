@@ -2,7 +2,7 @@
 # What this does.
 # Apart of our "robot" (controlled turtle), there are 3 turtles (3 "set_turtle" nodes running)
 # and a home at the bottom of the area (x=5, y=0.2) ("set_home" node).
-# By default, the swims to home ("go home") but stays careful and keep looking at the other
+# By default, the robot swims to home ("go home") but stays careful and keep looking at the other
 # turtles ("swim_toward" in "go home").
 # If any turtle comes too close to home, it starts to chase it ("chasing").
 # If severl turtles are close to home, it chases the closest ("inv_distance_to_home")
