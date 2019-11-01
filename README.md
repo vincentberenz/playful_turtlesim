@@ -15,7 +15,7 @@ ROS and turtlesim must be installed. Any version.
 ### Playful
 
 ```bash
-pip install funcsigs # only if you are using python2.7
+pip install funcsigs 
 pip install playful
 ```
 
