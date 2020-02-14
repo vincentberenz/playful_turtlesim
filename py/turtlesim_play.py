@@ -4,6 +4,8 @@ import threading,copy,random,time,math
 import rospy
 from geometry_msgs.msg import Twist
 
+from playful_turtlesim.py.data_collection import Logger
+
 _VELOCITY_TOPIC = "/turtle1/cmd_vel"
 _POSE_TOPIC = "/turtle1/pose"
 _SET_PEN_SERVICE = "set_pen"
@@ -35,8 +37,10 @@ class Home:
 
     def __init__(self,position):
         self.position = position
+        self.id_ = "home"
 
-        
+
+  
         
 
 # help function to get controlled turtle position
@@ -82,8 +86,28 @@ def _in_robot_frame(absolute_position):
     
     return position
 
+
+LOGGER = Logger();
+
+class log(playful.Node):
+
+    def __init__(self,path=None):
+
+        self.path = path
     
-       
+    def execute(self):
+
+        global LOGGER
+
+        while not self.should_pause():
+
+            LOGGER.save()
+
+            self.spin(0.1)
+
+        LOGGER.save_in_file(self.path)
+            
+            
                 
 # swim toward the targeted object.
 # assumes the position of the targeted object in
@@ -115,6 +139,8 @@ class swim_toward(playful.Node):
 
         while not self.should_pause():
 
+            ran =False
+
             if self.ask_for_resource("legs"):
             
                 target = self.get_target()
@@ -132,10 +158,14 @@ class swim_toward(playful.Node):
 
                     velocity_publisher.publish(msg)
 
+                    ran = True
+                    
             else :
                 
                 self.release_all_resources()    
-                    
+
+            #LOGGER.set_activation(target.id_,"swim_toward",ran)
+                
             self.spin(20)
 
         
@@ -394,3 +424,15 @@ class set_turtle(playful.Node):
         service = rospy.ServiceProxy(_KILL_SERVICE, Kill)
         service(self._name)
 
+
+class feature_collection(playful.Node):
+
+    def execute(self):
+
+        while not self.should_pause():
+            
+            # here code gathering all info
+
+            LOGGER.set_features(features)
+
+            self.spin(0.1)

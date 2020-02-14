@@ -1,0 +1,23 @@
+
+program:
+
+
+	targeting Turtle: chasing, while close_to_home, priority of 2 | threshold=4.5
+	go_home
+
+	set_turtle
+	set_home | x=5 ; y=0.2
+
+	#log | path="mypathtofile"
+	#feature_collection
+
+	chasing:
+		swim_toward
+		set_color | r=255 ; g=0 ; b=0
+
+	go_home:
+		targeting Home: swim_toward, while far_from_robot, priority of 2 | thresold=1
+		targeting Turtle: swim_toward | k_linear=0
+		#targeting Turtle: turn_toward
+		set_color | r=0 ; g=255 ; b=0
+

@@ -19,6 +19,8 @@ program:
 	set_turtle
 	set_home | x=5 ; y=0.2
 
+	#log | path="mypathtofile"
+	#feature_collection
 
 	chasing:
 		swim_toward
