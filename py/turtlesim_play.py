@@ -122,15 +122,17 @@ class swim_toward(playful.Node):
                 if target:
 
                     # assumed position in relative frame of robot
-                    position = target.position
+                    position = _in_robot_frame(target.position)
 
-                    if position[0]>0:
-                        msg.linear.x = self.k_linear * position[0]
-                    else :
-                        msg.linear.x = 0
-                    msg.angular.z = self.k_angular * math.atan2(position[1],position[0])
+                    if position is not None:
+                    
+                        if position[0]>0:
+                            msg.linear.x = self.k_linear * position[0]
+                        else :
+                            msg.linear.x = 0
+                        msg.angular.z = self.k_angular * math.atan2(position[1],position[0])
 
-                    velocity_publisher.publish(msg)
+                        velocity_publisher.publish(msg)
 
             else :
                 
@@ -184,9 +186,7 @@ class set_home(playful.Node):
     def execute(self):
 
         while not self.should_pause():
-
-            relative_position = _in_robot_frame([self.x,self.y])
-            playful.Memory.set(Home(relative_position))
+            playful.Memory.set(Home([self.x,self.y]))
             self.spin(20)
 
 
@@ -236,7 +236,12 @@ def far_from_robot(target=None,
     if not target or not target.position:
         return False
 
-    d = math.sqrt( sum ( [t**2 for t in target.position[:2]] ) )
+    position = _in_robot_frame(target.position)
+
+    if position is None:
+        return False
+    
+    d = math.sqrt( sum ( [t**2 for t in position[:2]] ) )
     return d>threshold
 
     return False
@@ -298,8 +303,7 @@ class set_turtle(playful.Node):
                     0)
 
             # setting it in playful, but in robot's frame
-            relative_position = _in_robot_frame(self._position)
-            turtle = Turtle(relative_position,self._name)
+            turtle = Turtle(self._position,self._name)
             playful.Memory.set(turtle,self._name)
 
             self.spin(20)
