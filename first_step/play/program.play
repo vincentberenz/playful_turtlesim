@@ -17,7 +17,6 @@ program:
 
 	go_home:
 		targeting Home: swim_toward, while far_from_robot, priority of 2 | thresold=1
-		targeting Turtle: swim_toward | k_linear=0
-		#targeting Turtle: turn_toward
+		targeting Turtle: turn_toward
 		set_color | r=0 ; g=255 ; b=0
 
